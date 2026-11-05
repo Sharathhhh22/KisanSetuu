@@ -10,13 +10,19 @@ if str(ROOT_DIR) not in sys.path:
 
 try:
     from backend.main import app
+    try:
+        from mangum import Mangum
+        handler = Mangum(app, lifespan="off")
+    except Exception as me:
+        print(f"[Mangum Notice] {me}")
+        handler = app
 except Exception as e:
     from fastapi import FastAPI
     from fastapi.responses import JSONResponse
     
     app = FastAPI(title="Kisan Setu Error Fallback")
     err_details = traceback.format_exc()
-    print(f"[VERCEL STARTUP ERROR] {err_details}")
+    print(f"[VERCEL STARTUP ERROR] {err_details}", file=sys.stderr)
     
     @app.api_route("/", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
     @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
@@ -29,6 +35,8 @@ except Exception as e:
             },
             status_code=500
         )
-
-
-handler = app
+    try:
+        from mangum import Mangum
+        handler = Mangum(app, lifespan="off")
+    except Exception:
+        handler = app
