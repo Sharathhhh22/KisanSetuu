@@ -1,0 +1,9 @@
+{
+  "name": "kisansetu",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified Digital Agricultural Platform for Indian Farmers",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  }
+}

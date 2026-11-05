@@ -19,7 +19,11 @@ if ENV_PATH.exists():
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 SECRET_KEY = os.getenv("SECRET_KEY", "kisansetu_default_fallback_secret_key_2026")
-DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "kisansetu.db"))
+# Database configuration (Use writable /tmp on Vercel Serverless)
+if os.getenv("VERCEL"):
+    DATABASE_PATH = os.getenv("DATABASE_PATH", "/tmp/kisansetu.db")
+else:
+    DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "kisansetu.db"))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 PORT = int(os.getenv("PORT", "8000"))
 HOST = os.getenv("HOST", "0.0.0.0")
