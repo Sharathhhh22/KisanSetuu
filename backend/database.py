@@ -10,7 +10,10 @@ def get_connection() -> sqlite3.Connection:
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
-    conn.execute("PRAGMA journal_mode = WAL;")
+    if not os.getenv("VERCEL"):
+        conn.execute("PRAGMA journal_mode = WAL;")
+    else:
+        conn.execute("PRAGMA journal_mode = DELETE;")
     return conn
 
 @contextmanager

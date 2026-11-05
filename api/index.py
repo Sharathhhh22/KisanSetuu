@@ -1,4 +1,6 @@
 import sys
+import os
+import traceback
 from pathlib import Path
 
 # Add project root to sys.path so 'backend' package is always importable on Vercel
@@ -6,4 +8,19 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 if str(ROOT_DIR) not in sys.path:
     sys.path.insert(0, str(ROOT_DIR))
 
-from backend.main import app
+try:
+    from backend.main import app
+except Exception as e:
+    from fastapi import FastAPI
+    from fastapi.responses import PlainTextResponse
+    
+    app = FastAPI(title="Kisan Setu Error Handler")
+    err_details = traceback.format_exc()
+    print(f"[VERCEL STARTUP ERROR] {err_details}")
+    
+    @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
+    async def vercel_error_fallback(full_path: str):
+        return PlainTextResponse(
+            f"Kisan Setu Vercel Serverless Function Startup Error:\n\n{err_details}",
+            status_code=500
+        )
