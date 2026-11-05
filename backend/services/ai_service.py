@@ -2,15 +2,25 @@ import json
 import base64
 import re
 from typing import Dict, Any, Optional, List
-from google import genai
-from google.genai import types
+try:
+    from google import genai
+    from google.genai import types
+    _GENAI_AVAILABLE = True
+except Exception as _e:
+    genai = None
+    types = None
+    _GENAI_AVAILABLE = False
+    print(f"[AI Service] Notice: google-genai package not available: {_e}")
+
 from backend.config import GEMINI_API_KEY, GEMINI_MODEL, DISCLAIMER_CROP_DIAGNOSIS
 
 # Client singleton
-_client: Optional[genai.Client] = None
+_client: Any = None
 
-def get_gemini_client() -> Optional[genai.Client]:
+def get_gemini_client() -> Any:
     global _client
+    if not _GENAI_AVAILABLE:
+        return None
     if _client is None and GEMINI_API_KEY:
         try:
             _client = genai.Client(api_key=GEMINI_API_KEY)

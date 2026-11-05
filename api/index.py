@@ -29,3 +29,6 @@ except Exception as e:
             },
             status_code=500
         )
+
+
+handler = app
