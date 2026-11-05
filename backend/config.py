@@ -17,7 +17,7 @@ if ENV_PATH.exists():
 
 # Configuration settings
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-flash-lite-latest")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 SECRET_KEY = os.getenv("SECRET_KEY", "kisansetu_default_fallback_secret_key_2026")
 DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "kisansetu.db"))
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")

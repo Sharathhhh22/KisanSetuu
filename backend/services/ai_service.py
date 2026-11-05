@@ -114,24 +114,32 @@ def analyze_crop_image(image_base64: str, crop_name_hint: Optional[str] = None, 
             if crop_name_hint and crop_name_hint.lower() != "unknown / general":
                 user_prompt += f"\nNote: The farmer indicated this is likely '{crop_name_hint}'."
 
-            # Multimodal call to Gemini
-            response = client.models.generate_content(
-                model=GEMINI_MODEL,
-                contents=[
-                    types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
-                    user_prompt
-                ]
-            )
+            # Multimodal call to Gemini with model resilience
+            response = None
+            for model_candidate in [GEMINI_MODEL, "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
+                try:
+                    response = client.models.generate_content(
+                        model=model_candidate,
+                        contents=[
+                            types.Part.from_bytes(data=image_bytes, mime_type=mime_type),
+                            user_prompt
+                        ]
+                    )
+                    if response and response.text:
+                        break
+                except Exception as model_err:
+                    print(f"[AI Service] Model {model_candidate} vision retry: {model_err}")
             
-            raw_text = response.text.strip()
-            # Clean possible markdown wrapping
-            if raw_text.startswith("```"):
-                raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
-                raw_text = re.sub(r"\s*```$", "", raw_text)
-            
-            data = json.loads(raw_text)
-            data["disclaimer"] = DISCLAIMER_CROP_DIAGNOSIS
-            return data
+            if response and response.text:
+                raw_text = response.text.strip()
+                # Clean possible markdown wrapping
+                if raw_text.startswith("```"):
+                    raw_text = re.sub(r"^```(?:json)?\s*", "", raw_text)
+                    raw_text = re.sub(r"\s*```$", "", raw_text)
+                
+                data = json.loads(raw_text)
+                data["disclaimer"] = DISCLAIMER_CROP_DIAGNOSIS
+                return data
     except Exception as e:
         print(f"[AI Service] Gemini vision call failed or fell back: {e}")
 
@@ -209,14 +217,23 @@ def generate_chat_response(
             prompt_full = f"{sys_prompt}\n\nCONVERSATION HISTORY:\n{history_text}\nFarmer: {message}\nKisan Setu:"
             parts.append(prompt_full)
 
-            response = client.models.generate_content(
-                model=GEMINI_MODEL,
-                contents=parts
-            )
-            return {
-                "content": response.text.strip(),
-                "sources": "ICAR, KVK & State Agricultural Universities Package of Practices"
-            }
+            response = None
+            for model_candidate in [GEMINI_MODEL, "gemini-3-flash-preview", "gemini-flash-lite-latest"]:
+                try:
+                    response = client.models.generate_content(
+                        model=model_candidate,
+                        contents=parts
+                    )
+                    if response and response.text:
+                        break
+                except Exception as chat_err:
+                    print(f"[AI Service] Model {model_candidate} chat retry: {chat_err}")
+
+            if response and response.text:
+                return {
+                    "content": response.text.strip(),
+                    "sources": "ICAR, KVK & State Agricultural Universities Package of Practices"
+                }
     except Exception as e:
         print(f"[AI Service] Gemini chat call failed: {e}")
 
