@@ -7,13 +7,23 @@ from typing import Generator, Any, Dict, List, Optional
 from backend.config import DATABASE_PATH
 
 def get_connection() -> sqlite3.Connection:
+    # Ensure parent directory of database exists if not in /tmp
+    db_dir = os.path.dirname(DATABASE_PATH)
+    if db_dir and not os.path.exists(db_dir):
+        try:
+            os.makedirs(db_dir, exist_ok=True)
+        except Exception:
+            pass
     conn = sqlite3.connect(DATABASE_PATH)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON;")
-    if not os.getenv("VERCEL"):
-        conn.execute("PRAGMA journal_mode = WAL;")
-    else:
+    if DATABASE_PATH.startswith("/tmp") or os.getenv("VERCEL") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
         conn.execute("PRAGMA journal_mode = DELETE;")
+    else:
+        try:
+            conn.execute("PRAGMA journal_mode = WAL;")
+        except Exception:
+            conn.execute("PRAGMA journal_mode = DELETE;")
     return conn
 
 @contextmanager

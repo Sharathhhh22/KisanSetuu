@@ -52,11 +52,25 @@ app.add_middleware(
 # Initialize database schema on startup
 @app.on_event("startup")
 def on_startup():
-    init_db()
+    try:
+        init_db()
+        print("[Kisan Setu] Database initialized.")
+    except Exception as e:
+        print(f"[Kisan Setu] Startup DB initialization notice: {e}")
 
 # ============================================================================
 # 1. Health & Meta Endpoints
 # ============================================================================
+
+@app.get("/api")
+@app.get("/api/")
+def api_root():
+    return {
+        "status": "healthy",
+        "service": "Kisan Setu Agricultural Engine",
+        "version": "1.0.0",
+        "gemini_configured": bool(GEMINI_API_KEY)
+    }
 
 @app.get("/api/health")
 def health_check():

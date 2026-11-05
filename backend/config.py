@@ -20,10 +20,20 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3-flash-preview")
 SECRET_KEY = os.getenv("SECRET_KEY", "kisansetu_default_fallback_secret_key_2026")
 # Database configuration (Use writable /tmp on Vercel Serverless)
-if os.getenv("VERCEL"):
-    DATABASE_PATH = os.getenv("DATABASE_PATH", "/tmp/kisansetu.db")
-else:
-    DATABASE_PATH = os.getenv("DATABASE_PATH", str(BASE_DIR / "kisansetu.db"))
+def _get_database_path() -> str:
+    if os.getenv("DATABASE_PATH"):
+        return os.environ["DATABASE_PATH"]
+    if os.getenv("VERCEL") or os.getenv("VERCEL_ENV") or os.getenv("AWS_LAMBDA_FUNCTION_NAME"):
+        return "/tmp/kisansetu.db"
+    try:
+        test_file = BASE_DIR / ".write_test"
+        test_file.touch()
+        test_file.unlink()
+        return str(BASE_DIR / "kisansetu.db")
+    except (OSError, PermissionError):
+        return "/tmp/kisansetu.db"
+
+DATABASE_PATH = _get_database_path()
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 PORT = int(os.getenv("PORT", "8000"))
 HOST = os.getenv("HOST", "0.0.0.0")

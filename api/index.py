@@ -12,15 +12,20 @@ try:
     from backend.main import app
 except Exception as e:
     from fastapi import FastAPI
-    from fastapi.responses import PlainTextResponse
+    from fastapi.responses import JSONResponse
     
-    app = FastAPI(title="Kisan Setu Error Handler")
+    app = FastAPI(title="Kisan Setu Error Fallback")
     err_details = traceback.format_exc()
     print(f"[VERCEL STARTUP ERROR] {err_details}")
     
+    @app.api_route("/", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
     @app.api_route("/{full_path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"])
-    async def vercel_error_fallback(full_path: str):
-        return PlainTextResponse(
-            f"Kisan Setu Vercel Serverless Function Startup Error:\n\n{err_details}",
+    async def vercel_error_fallback(full_path: str = ""):
+        return JSONResponse(
+            {
+                "status": "startup_error",
+                "error": str(err_details),
+                "message": "Kisan Setu serverless function encountered an error during startup."
+            },
             status_code=500
         )
