@@ -672,13 +672,18 @@ def verify_expert(expert_id: int, admin: Dict[str, Any] = Depends(get_current_ad
 # 11. Static Files & Frontend SPA Serving
 # ============================================================================
 
+ROOT_DIST = Path(__file__).resolve().parent.parent / "dist"
 FRONTEND_DIST = Path(__file__).resolve().parent.parent / "frontend" / "dist"
-if FRONTEND_DIST.exists():
-    app.mount("/assets", StaticFiles(directory=str(FRONTEND_DIST / "assets")), name="assets")
+STATIC_DIR = ROOT_DIST if ROOT_DIST.exists() else FRONTEND_DIST
+
+if STATIC_DIR.exists():
+    assets_dir = STATIC_DIR / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        file_path = FRONTEND_DIST / full_path
+        file_path = STATIC_DIR / full_path
         if file_path.is_file():
             return FileResponse(file_path)
-        return FileResponse(FRONTEND_DIST / "index.html")
+        return FileResponse(STATIC_DIR / "index.html")
