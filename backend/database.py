@@ -26,8 +26,20 @@ def get_connection() -> sqlite3.Connection:
             conn.execute("PRAGMA journal_mode = DELETE;")
     return conn
 
+_db_initialized = False
+
+def ensure_db_initialized():
+    global _db_initialized
+    if not _db_initialized:
+        _db_initialized = True
+        try:
+            init_db()
+        except Exception as e:
+            print(f"[DB Init Notice] {e}")
+
 @contextmanager
 def get_db() -> Generator[sqlite3.Connection, None, None]:
+    ensure_db_initialized()
     conn = get_connection()
     try:
         yield conn

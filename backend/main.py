@@ -49,14 +49,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Initialize database schema on startup
-@app.on_event("startup")
-def on_startup():
-    try:
-        init_db()
-        print("[Kisan Setu] Database initialized.")
-    except Exception as e:
-        print(f"[Kisan Setu] Startup DB initialization notice: {e}")
+# Lazy database initialization on first database access via backend.database.ensure_db_initialized()
 
 # ============================================================================
 # 1. Health & Meta Endpoints
