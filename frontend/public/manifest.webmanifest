@@ -1,0 +1,17 @@
+{
+  "name": "Kisan Setu - ಕಿಸಾನ್ ಸೇತು - किसान सेतु",
+  "short_name": "KisanSetu",
+  "description": "Unified Digital Agricultural Assistance Platform for Indian Farmers",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#15803D",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
